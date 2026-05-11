@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
   [ValidateSet("Minimal","Full")]
   [string]$RightsMode = "Minimal",
@@ -7,6 +7,21 @@ param(
 
   [switch]$NoSystemFallback
 )
+
+# Vérifier si le script est exécuté en tant qu'administrateur
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    # Relancer le script avec des privilèges élevés
+    Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+    exit
+}
+
+# Confirmation avant de procéder
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "Voulez-vous corriger mDNS ?" -ForegroundColor Yellow
+Write-Host "Appuyez sur une touche pour continuer..."
+Write-Host "Faites CTRL+C pour annuler" -ForegroundColor Red
+Write-Host "========================================" -ForegroundColor Cyan
+$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
 function Assert-Admin {
   $id=[Security.Principal.WindowsIdentity]::GetCurrent()
